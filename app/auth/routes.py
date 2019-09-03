@@ -1,7 +1,7 @@
 from datetime import timedelta
 from urllib.parse import urlparse, urljoin
 
-from flask import render_template, url_for, redirect, request, flash, abort
+from flask import render_template, url_for, redirect, request, flash, abort, make_response
 from flask_login import login_required, logout_user, login_user, current_user
 
 from app.auth import bp_auth
@@ -64,7 +64,9 @@ def signup():
         db.session.add(user)
         db.session.commit()
         flash('You are now a registered user!')
-        return redirect(url_for('auth.login'))
+        response = make_response(redirect(url_for('main.index')))
+        response.set_cookie("username", form.name.data)
+        return response
     return render_template('signup.html', form=form)
 
 
@@ -76,15 +78,3 @@ def logout():
     return redirect(url_for('main.index'))
 
 
-"""
-The following version of signup was used to demo the cookie creation
-
-@bp_auth.route('/signup', methods=['POST', 'GET'])
-def signup():
-    form = SignupForm()
-    if form.validate_on_submit():
-        response = make_response(redirect(url_for('main.index')))
-        response.set_cookie("username", form.name.data)
-        return response
-    return render_template('signup.html', form=form)
-"""

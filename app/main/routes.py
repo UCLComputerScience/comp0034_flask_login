@@ -1,6 +1,7 @@
 import datetime
 
 from flask import render_template, url_for, redirect, make_response, request
+from flask_login import current_user
 
 from app.main import bp_main
 
@@ -8,6 +9,8 @@ from app.main import bp_main
 @bp_main.route('/')
 def index(name=None):
     # To read a cookie, access the request object
+    if current_user.is_authenticated:
+        return render_template('index.html', name=current_user.name)
     if request.cookies.get('username'):
         name = request.cookies.get('username')
     return render_template('index.html', name=name)
