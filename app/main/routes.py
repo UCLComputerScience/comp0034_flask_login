@@ -1,33 +1,36 @@
-from flask import render_template, url_for, redirect, flash
+import datetime
+
+from flask import render_template, url_for, redirect, make_response, request
 
 from app.main import bp_main
-from app.main.forms import SignupForm
 
 
 @bp_main.route('/')
-def index():
-    """Renders the homepage as HTML, doesn't use of Jinja2"""
-    return render_template('index.html')
+def index(name=None):
+    # To read a cookie, access the request object
+    if request.cookies.get('username'):
+        name = request.cookies.get('username')
+    return render_template('index.html', name=name)
 
 
-@bp_main.route('/hello/')
-@bp_main.route('/hello/<name>/')
-def hello(name=None):
-    """Renders the hello page, uses Jinja2 but doesn't inherit from base template"""
-    return render_template('hello.html', name=name)
+@bp_main.route('/delete_cookie')
+def delete_cookie():
+    response = make_response(redirect(url_for('main.index')))
+    # To delete a cookie, set its expiration as a date in the past
+    response.set_cookie('username', '', expires=datetime.datetime.now())
+    return response
 
 
-@bp_main.route('/hello_child/<name>/')
-def hello_child(name=None):
-    """Renders the hello page with template inheritance which enables message flashing. Used in the signup example"""
-    return render_template('hello_child.html', name=name)
+"""
+Moved to auth
 
-
-@bp_main.route('/signup/', methods=['POST', 'GET'])
+@bp_main.route('/signup', methods=['POST', 'GET'])
 def signup():
-    """Sign up form, no database interaction"""
     form = SignupForm()
     if form.validate_on_submit():
-        flash('Signup requested for {}'.format(form.name.data))
-        return redirect(url_for('main.hello_child', name=form.name.data))
+        '''To set a cookie, create a response, set the cookie for the response then return the response'''
+        response = make_response(redirect(url_for('main.index')))
+        response.set_cookie("username", form.name.data)
+        return response
     return render_template('signup.html', form=form)
+"""

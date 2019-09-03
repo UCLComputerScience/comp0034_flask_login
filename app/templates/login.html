@@ -1,15 +1,14 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% from "_formhelpers.html" import render_field %}
-{% block title %}Sign Up{% endblock %}
+{% block title %}Login{% endblock %}
 {% block content %}
     <form action="" method="post" novalidate>
         {{ form.hidden_tag() }}
         <dl>
-            {{ render_field(form.name) }}
             {{ render_field(form.email) }}
             {{ render_field(form.password) }}
-            {{ render_field(form.confirm) }}
-            <dd><input type=submit value='Sign Up' class='btn btn-primary'></dd>
+            {{ render_field(form.remember_me) }}
+            <dd><input type=submit value='Login' class='btn btn-primary'></dd>
         </dl>
     </form>
 {% endblock %}

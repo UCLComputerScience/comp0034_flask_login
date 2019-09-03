@@ -4,14 +4,9 @@ from os.path import dirname, abspath, join
 
 class Config(object):
     """Set Flask base configuration"""
-    SECRET_KEY = 'dfdQbTOExternjy5xmCNaA'
-
-    # General Config
-    DEBUG = False
-    TESTING = False
-
-    # Forms config
-    WTF_CSRF_SECRET_KEY = 'this-is-not-random-but-it-should-be'
+    CSRF_ENABLED = True
+    SECRET_KEY = 'dfdQbTOExternjy5xmCNaB'
+    ENV = 'development'
 
     # Database config
     CWD = dirname(abspath(__file__))
@@ -20,17 +15,25 @@ class Config(object):
 
 
 class ProdConfig(Config):
-    # This is not a real server or user id/pwd !
-    DB_SERVER = '192.168.19.32'
-    SQLALCHEMY_DATABASE_URI = 'mysql://user@{}/foo'.format(DB_SERVER)
-    DEBUG = False
-    TESTING = False
+    # ENV = 'production' sets TESTING to False, DEBUG to False
+    ENV = 'production'
 
 
 class TestConfig(Config):
-    TESTING = True
+    # ENV = 'testing' sets TESTING to True, DEBUG to False
+    ENV = 'testing'
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
 
 
 class DevConfig(Config):
+    # ENV = 'development' sets TESTING to False, DEBUG to True
+    ENV = 'development'
+    TESTING = False
     DEBUG = True
+
+
+config = {
+    'DevConfig': DevConfig,
+    'TestConfig': TestConfig,
+    'ProdConfig': ProdConfig
+}

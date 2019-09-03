@@ -1,8 +1,10 @@
-<html>
-<head>
-    <title>Home</title>
-</head>
-<body>
-<h1>Welcome to the home page!</h1>
-</body>
-</html>
+<!-- Use the base template -->
+{% extends "base.html" %}
+
+<!-- Title for this page -->
+{% block title %} Hello {% endblock %}
+
+<!-- Content for this page -->
+{% block content %}
+    <h1>Hello, {{ name|default("world!", true) }}</h1>
+{% endblock %}

@@ -18,21 +18,32 @@
             <a class="nav-link" href="{{ url_for("main.index") }}">Home</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="{{ url_for("main.signup") }}">Sign up</a>
+            <a class="nav-link" href="{{ url_for("auth.signup") }}">Sign up</a>
         </li>
+        {% if current_user.is_anonymous %}
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for("auth.login") }}">Log in</a>
+            </li>
+        {% else %}
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for("auth.logout") }}">Logout</a>
+            </li>
+        {% endif %}
     </ul>
 </nav>
 <!-- Begin page content -->
 <main role="main" class="container">
 
-    <!-- Allows flashed messages to be displayed on a page -->
+    <!-- Displays flashed messages on a page -->
     {% with messages = get_flashed_messages() %}
         {% if messages %}
-            <ul>
-                {% for message in messages %}
-                    <li>{{ message }}</li>
-                {% endfor %}
-            </ul>
+            <div class="alert alert-info">
+                <ul class="list-unstyled">
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
         {% endif %}
     {% endwith %}
 
