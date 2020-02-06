@@ -1,22 +1,18 @@
-from flask_login import UserMixin, LoginManager
-from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
-db = SQLAlchemy()
-login_manager = LoginManager()
+from app import db
 
 
-class Student(UserMixin, db.Model):
-    __tablename__ = 'students'
-
+class Student(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.Text)
+    student_ref = db.Column(db.Integer, nullable=False, unique=True)
+    name = db.Column(db.Text, nullable=False)
     email = db.Column(db.Text)
     password = db.Column(db.Text)
-    grades = db.relationship('Grade', backref=db.backref('students', lazy=True))
+    grades = db.relationship('Grade', backref='students')
 
     def __repr__(self):
-        return '<Student {}>'.format(self.name)
+        return '<Student {}>'.format(self.student_id)
 
     def set_password(self, password):
         self.password = generate_password_hash(password)
@@ -25,39 +21,31 @@ class Student(UserMixin, db.Model):
         return check_password_hash(self.password, password)
 
 
-@login_manager.user_loader
-def load_user(user_id):
-    return Student.query.get(int(user_id))
-
-
 class Teacher(db.Model):
-    __tablename__ = 'teachers'
-
     id = db.Column(db.Integer, primary_key=True)
+    teacher_ref = db.Column(db.Text, nullable=False)
+    title = db.Column(db.Text)
     name = db.Column(db.Text)
-    courses = db.relationship('Course', backref='teachers', lazy=True)
+    courses = db.relationship('Course', backref='teachers')
 
     def __repr__(self):
-        return '<Teacher {}>'.format(self.name)
+        return '<Teacher {} {}>'.format(self.first_name, self.last_name)
 
 
 class Course(db.Model):
-    __tablename__ = 'courses'
-
     id = db.Column(db.Integer, primary_key=True)
+    course_code = db.Column(db.Integer, nullable=False)
     name = db.Column(db.Text, nullable=False)
-    teacher_id = db.Column(db.Integer, db.ForeignKey('teachers.id'), nullable=False)
-    grades = db.relationship('Grade', backref=db.backref('courses', lazy=True))
+    teacher_id = db.Column(db.Integer, db.ForeignKey('teacher.id'), nullable=False)
+    grades = db.relationship('Grade', backref='courses')
 
     def __repr__(self):
-        return '<Course {}>'.format(self.name)
+        return '<Course {}>'.format(self.code, self.name)
 
 
 class Grade(db.Model):
-    __tablename__ = 'grades'
-
-    student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False, primary_key=True)
-    course_id = db.Column(db.Integer, db.ForeignKey('courses.id'), nullable=False, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False, primary_key=True)
+    course_id = db.Column(db.Integer, db.ForeignKey('course.id'), nullable=False, primary_key=True)
     grade = db.Column(db.Text)
 
     def __repr__(self):

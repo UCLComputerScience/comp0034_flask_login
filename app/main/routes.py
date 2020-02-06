@@ -1,39 +1,59 @@
-import datetime
+from flask import render_template, Blueprint, request, flash, redirect, url_for
+from sqlalchemy.exc import IntegrityError
 
-from flask import render_template, url_for, redirect, make_response, request
-from flask_login import current_user
+from app import db
+from app.main.forms import SignupForm
+from app.models import Course, Student, Teacher
 
-from app.main import bp_main
+bp_main = Blueprint('main', __name__)
 
 
 @bp_main.route('/')
-def index(name=None):
-    # To read a cookie, access the request object
-    if current_user.is_authenticated:
-        return render_template('index.html', name=current_user.name)
-    if request.cookies.get('username'):
-        name = request.cookies.get('username')
-    return render_template('index.html', name=name)
+def index():
+    return render_template('index.html')
 
 
-@bp_main.route('/delete_cookie')
-def delete_cookie():
-    response = make_response(redirect(url_for('main.index')))
-    # To delete a cookie, set its expiration as a date in the past
-    response.set_cookie('username', '', expires=datetime.datetime.now())
-    return response
-
-
-"""
-Moved to auth
-
-@bp_main.route('/signup', methods=['POST', 'GET'])
+@bp_main.route('/signup/', methods=['POST', 'GET'])
 def signup():
-    form = SignupForm()
-    if form.validate_on_submit():
-        '''To set a cookie, create a response, set the cookie for the response then return the response'''
-        response = make_response(redirect(url_for('main.index')))
-        response.set_cookie("username", form.name.data)
-        return response
+    form = SignupForm(request.form)
+    if request.method == 'POST' and form.validate():
+        user = Student(name=form.name.data, email=form.email.data, student_ref=form.student_ref.data)
+        user.set_password(form.password.data)
+        try:
+            db.session.add(user)
+            db.session.commit()
+            flash('You are now a registered user!')
+            return redirect(url_for('main.index'))
+        except IntegrityError:
+            db.session.rollback()
+            flash('ERROR! Unable to register {}. Please check your details are correct and resubmit'.format(form.email.data), 'error')
     return render_template('signup.html', form=form)
-"""
+
+
+@bp_main.route('/courses', methods=['GET'])
+def courses():
+    courses = Course.query.join(Teacher).with_entities(Course.course_code, Course.name, Teacher.name.label('teacher_name')).all()
+    return render_template("courses.html", courses=courses)
+
+
+@bp_main.route('/search', methods=['POST', 'GET'])
+def search():
+    if request.method == 'POST':
+        term = request.form['search_term']
+        if term == "":
+            flash("Enter a name to search for")
+            return redirect('/')
+        results = Student.query.filter(Student.email.contains(term)).all()
+        if not results:
+            flash("No students found with that name.")
+            return redirect('/')
+        return render_template('search_results.html', results=results)
+    else:
+        return redirect(url_for('main.index'))
+
+
+@bp_main.route('/student/<name>')
+def show_student(name):
+    user = Student.query.filter_by(name=name).first_or_404(description='There is no user {}'.format(name))
+    # user = Student.query.filter_by(name=name).first_or_404()
+    return render_template('show_student.html', user=user)

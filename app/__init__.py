@@ -1,6 +1,10 @@
 from flask import Flask, render_template
+from flask_sqlalchemy import SQLAlchemy
 
-from app.populate_db import populate_database
+from config import DevConfig
+
+# The SQLAlchemy object is defined globally
+db = SQLAlchemy()
 
 
 def page_not_found(e):
@@ -11,7 +15,7 @@ def internal_server_error(e):
     return render_template('500.html'), 500
 
 
-def create_app(config_class=None):
+def create_app(config_class=DevConfig):
     """
     Creates an application instance to run
     :return: A Flask object
@@ -21,25 +25,21 @@ def create_app(config_class=None):
     # Configure app wth the settings from config.py
     app.config.from_object(config_class)
 
-    # Initialize extensions
-    from app.models import db, login_manager
+    # Initialise the database and create tables
+    db.init_app(app)
+
+    from populate_db import populate_db
+    from app.models import Teacher, Student, Course, Grade
     with app.app_context():
-        db.init_app(app)
-        login_manager.init_app(app)
-        login_manager.login_view = 'auth.login'
-        # Create the database structure and add data
         db.create_all()
-        populate_database(db)
-
-    # Register Blueprints
-    from app.main import bp_main
-    app.register_blueprint(bp_main)
-
-    from app.auth import bp_auth
-    app.register_blueprint(bp_auth)
+        populate_db()
 
     # Register error handlers
     app.register_error_handler(404, page_not_found)
     app.register_error_handler(500, internal_server_error)
+
+    # Register Blueprints
+    from app.main.routes import bp_main
+    app.register_blueprint(bp_main)
 
     return app
