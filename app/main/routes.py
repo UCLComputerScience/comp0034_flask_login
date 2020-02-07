@@ -1,16 +1,18 @@
 from flask import render_template, Blueprint, request, flash, redirect, url_for
+from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import with_polymorphic, session
 
 from app import db
 from app.main.forms import SignupForm
-from app.models import Course, Student, Teacher
+from app.models import Course, Student, Teacher, User
 
 bp_main = Blueprint('main', __name__)
 
 
 @bp_main.route('/')
-def index():
-    return render_template('index.html')
+def index(name=""):
+    return render_template('index.html', name=name)
 
 
 @bp_main.route('/signup/', methods=['POST', 'GET'])
@@ -26,13 +28,15 @@ def signup():
             return redirect(url_for('main.index'))
         except IntegrityError:
             db.session.rollback()
-            flash('ERROR! Unable to register {}. Please check your details are correct and resubmit'.format(form.email.data), 'error')
+            flash('ERROR! Unable to register {}. Please check your details are correct and resubmit'.format(
+                form.email.data), 'error')
     return render_template('signup.html', form=form)
 
 
 @bp_main.route('/courses', methods=['GET'])
 def courses():
-    courses = Course.query.join(Teacher).with_entities(Course.course_code, Course.name, Teacher.name.label('teacher_name')).all()
+    courses = Course.query.join(Teacher).with_entities(Course.course_code, Course.name,
+                                                       Teacher.name.label('teacher_name')).all()
     return render_template("courses.html", courses=courses)
 
 
@@ -43,7 +47,9 @@ def search():
         if term == "":
             flash("Enter a name to search for")
             return redirect('/')
-        results = Student.query.filter(Student.email.contains(term)).all()
+        users = with_polymorphic(User, [Student, Teacher])
+        results = db.session.query(users).filter(or_(users.Student.name.contains(term), users.Teacher.name.contains(term))).all()
+        # results = Student.query.filter(Student.email.contains(term)).all()
         if not results:
             flash("No students found with that name.")
             return redirect('/')
@@ -55,5 +61,4 @@ def search():
 @bp_main.route('/student/<name>')
 def show_student(name):
     user = Student.query.filter_by(name=name).first_or_404(description='There is no user {}'.format(name))
-    # user = Student.query.filter_by(name=name).first_or_404()
     return render_template('show_student.html', user=user)
