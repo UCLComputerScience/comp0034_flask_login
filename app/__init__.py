@@ -3,9 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 from config import DevConfig
 
-# The SQLAlchemy object is defined globally
 db = SQLAlchemy()
-
 
 def page_not_found(e):
     return render_template('404.html'), 404

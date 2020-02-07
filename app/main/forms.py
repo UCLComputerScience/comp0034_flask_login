@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from sqlalchemy import or_
 from sqlalchemy.orm import with_polymorphic
-from wtforms import SubmitField, StringField, PasswordField, SelectField
+from wtforms import StringField, PasswordField, SelectField
 from wtforms.validators import DataRequired, EqualTo, Email, ValidationError
 
 from app import db
