@@ -19,7 +19,10 @@ def index(name=""):
 def signup():
     form = SignupForm(request.form)
     if request.method == 'POST' and form.validate():
-        user = Student(name=form.name.data, email=form.email.data, student_ref=form.student_ref.data)
+        if form.role.data == "student":
+            user = Student(name=form.name.data, email=form.email.data, student_ref=form.uni_id.data)
+        else:
+            user = Teacher(name=form.name.data, title=form.title.data, teacher_ref=form.uni_id.data, email=form.email.data)
         user.set_password(form.password.data)
         try:
             db.session.add(user)

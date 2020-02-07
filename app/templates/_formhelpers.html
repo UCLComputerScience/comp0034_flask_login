@@ -2,7 +2,7 @@
     <dt>{{ field.label }}
     <dd>{{ field(**kwargs)|safe }}
         {% if field.errors %}
-            <ul class=errors>
+            <ul class="alert-warning list-unstyled">
                 {% for error in field.errors %}
                     <li>{{ error }}</li>
                 {% endfor %}
