@@ -1,9 +1,12 @@
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
+from flask_wtf import CSRFProtect
 
 from config import DevConfig
 
 db = SQLAlchemy()
+csrf = CSRFProtect()
+
 
 def page_not_found(e):
     return render_template('404.html'), 404
@@ -19,12 +22,9 @@ def create_app(config_class=DevConfig):
     :return: A Flask object
     """
     app = Flask(__name__)
-
-    # Configure app wth the settings from config.py
     app.config.from_object(config_class)
-
-    # Initialise the database and create tables
     db.init_app(app)
+    csrf.init_app(app)
 
     from populate_db import populate_db
     from app.models import Teacher, Student, Course, Grade
@@ -32,11 +32,9 @@ def create_app(config_class=DevConfig):
         db.create_all()
         populate_db()
 
-    # Register error handlers
     app.register_error_handler(404, page_not_found)
     app.register_error_handler(500, internal_server_error)
 
-    # Register Blueprints
     from app.main.routes import bp_main
     app.register_blueprint(bp_main)
 

@@ -1,4 +1,5 @@
 from flask import render_template, Blueprint, request, flash, redirect, url_for
+from flask_wtf.csrf import CSRFError
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import with_polymorphic, session
@@ -8,6 +9,11 @@ from app.main.forms import SignupForm
 from app.models import Course, Student, Teacher, User
 
 bp_main = Blueprint('main', __name__)
+
+
+@bp_main.errorhandler(CSRFError)
+def handle_csrf_error(e):
+    return render_template('csrf_error.html', reason=e.description), 400
 
 
 @bp_main.route('/')

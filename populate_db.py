@@ -9,19 +9,19 @@ def populate_db():
     """
 
     if not User.query.first():
-        s1 = Student(email="cs1234567@ucl.co.uk", password="cs1234567", student_ref="CS1234567", name="Ahmet Roth")
-        s2 = Student(email="cs1234568@ucl.co.uk", password="cs1234568", user_type="student", student_ref="CS1234568", name="Elsie-Rose Kent")
-        s3 = Student(email="cs1234569@ucl.co.uk", password="cs1234569", user_type="student", student_ref="CS1234569", name="Willem Bull")
-        s4 = Student(email="cs1234570@ucl.co.uk", password="cs1234570", user_type="student", student_ref="CS1234570", name="Jago Curtis")
-        s5 = Student(email="cs1234571@ucl.co.uk", password="cs1234571", user_type="student", student_ref="CS1234571", name="Mateusz Bauer")
-        s6 = Student(email="cs1234572@ucl.co.uk", password="cs1234572", user_type="student", student_ref="CS1234572", name="Morwenna Shepherd")
+        s1 = Student(email="cs1234567@ucl.ac.uk", password="cs1234567", student_ref="CS1234567", name="Ahmet Roth")
+        s2 = Student(email="cs1234568@ucl.ac.uk", password="cs1234568", user_type="student", student_ref="CS1234568", name="Elsie-Rose Kent")
+        s3 = Student(email="cs1234569@ucl.ac.uk", password="cs1234569", user_type="student", student_ref="CS1234569", name="Willem Bull")
+        s4 = Student(email="cs1234570@ucl.ac.uk", password="cs1234570", user_type="student", student_ref="CS1234570", name="Jago Curtis")
+        s5 = Student(email="cs1234571@ucl.ac.uk", password="cs1234571", user_type="student", student_ref="CS1234571", name="Mateusz Bauer")
+        s6 = Student(email="cs1234572@ucl.ac.uk", password="cs1234572", user_type="student", student_ref="CS1234572", name="Morwenna Shepherd")
 
-        t1 = Teacher(email="ct0000123@ucl.co.uk", password="ct0000123", user_type="teacher", teacher_ref="uclcs0002", title="Dr", name="Lewis Baird")
-        t2 = Teacher(email="ct0000124@ucl.co.uk", password="ct0000124", user_type="teacher", teacher_ref="uclcs0006", title="Prof", name="Elif Munro")
-        t3 = Teacher(email="ct0000125@ucl.co.uk", password="ct0000125", user_type="teacher", teacher_ref="uclcs0010", title="Ms", name="Aleyna Bonilla")
-        t4 = Teacher(email="ct0000126@ucl.co.uk", password="ct0000126", user_type="teacher", teacher_ref="uclcs0072", title="Dr", name="Maximus Tierney")
-        t5 = Teacher(email="ct0000127@ucl.co.uk", password="ct0000127", user_type="teacher", teacher_ref="uclcs0021", title="Dr", name="Marcelina McClure")
-        t6 = Teacher(email="ct0000128@ucl.co.uk", password="ct0000128", user_type="teacher", teacher_ref="uclcs0132", title="Dr", name="Fei Hong Zhou")
+        t1 = Teacher(email="ct0000123@ucl.ac.uk", password="ct0000123", user_type="teacher", teacher_ref="uclcs0002", title="Dr", name="Lewis Baird")
+        t2 = Teacher(email="ct0000124@ucl.ac.uk", password="ct0000124", user_type="teacher", teacher_ref="uclcs0006", title="Prof", name="Elif Munro")
+        t3 = Teacher(email="ct0000125@ucl.ac.uk", password="ct0000125", user_type="teacher", teacher_ref="uclcs0010", title="Ms", name="Aleyna Bonilla")
+        t4 = Teacher(email="ct0000126@ucl.ac.uk", password="ct0000126", user_type="teacher", teacher_ref="uclcs0072", title="Dr", name="Maximus Tierney")
+        t5 = Teacher(email="ct0000127@ucl.ac.uk", password="ct0000127", user_type="teacher", teacher_ref="uclcs0021", title="Dr", name="Marcelina McClure")
+        t6 = Teacher(email="ct0000128@ucl.ac.uk", password="ct0000128", user_type="teacher", teacher_ref="uclcs0132", title="Dr", name="Fei Hong Zhou")
 
         c1 = Course(course_code="COMP0015", name="Introduction to Programming")
         c2 = Course(course_code="COMP0034", name="Software Engineering")
