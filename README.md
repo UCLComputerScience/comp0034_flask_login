@@ -106,9 +106,9 @@ The UserMixin class will provide default implementations for the following metho
 
 Edit the User class in models.py to inherit UserMixin, you will also need to add the relevant import e.g. 
  ```python
-    from flask_login import UserMixin
+    from flask_login import UserMixin
         
-    class User(UserMixin, db.Model):
+    class User(UserMixin, db.Model):
  ```
 
 ### Exercise 6: Create a login route
@@ -189,16 +189,15 @@ Logout should only occur if a user is logged in, so use the `@login_required` de
     ```
 4. Update the navbar in the base template to toggle between log in and logout e.g.
     ```jinja2
-    {% if current_user.is_anonymous %}    
-   <li class="nav-item">        
-       <a class="nav-link" href="{{ url_for("auth.login") }}">Log in</a>    
-   </li>
-   {% else %}    
-   <li class="nav-item">        
-       <a class="nav-link" href="{{ url_for("auth.logout") }}">Log out</a>    
-   </li>
+   {% if current_user.is_anonymous %}
+   <li class="nav-item">
+       <a class="nav-link" href="{{ url_for("auth.login") }}">Log in</a>
+   </li>
+   {% else %}
+   <li class="nav-item">
+       <a class="nav-link" href="{{ url_for("auth.logout") }}">Log out</a>
+   </li>
    {% endif %}
-
     ```
     The is_anonymous property is one of the attributes that Flask-Login adds to user objects through the UserMixin class.
     The `current_user.is_anonymous` expression will be True only when the user is not logged in.
