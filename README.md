@@ -36,7 +36,26 @@ To read a cookie, you need to access the request object.
 4. Signup a new user. You should be directed to the `index` page after a successful signup which should have the content "Welcome <name>".
 5. Go to http://127.0.0.1:5000/delete_cookie. You should be directed to the `index` page which should now display "Welcome".
 
-### Exercise 2: Configure the app to support the login manager extension
+### Exercise 2: Sessions
+Login and logout routes have been added to the app, these simply set and delete the session cookie (i.e. no database interaction)
+1. Start the Flask app
+2. Open Chrome:
+    - Open the developer tools
+    - Select the Application tab along the top of the toolbar
+    - Select Cookies from the sidebar on the left
+
+3. Login:
+    - Go to http://localhost:5000/login/ in Chrome.
+    - Enter any email address and password and submit the form. 
+    - The index page should show the email address you just entered on the login form.
+    - You should see the session in the Cookies section of the Developer Tools pane in Chrome.
+
+4. Logout:
+    - enter http://localhost:5000/logout/
+    - The index page should no longer display the email address in the welcome text.
+
+
+### Exercise 3: Configure the app to support the login manager extension
 1. Create a session object and a Login object for the app in `app/__init__.py`
 It will look something like this:
     ```python
@@ -56,7 +75,7 @@ It will look something like this:
        login_manager.init_app(app)
     ```
 
-### Exercise 3: Create a new auth package for our app
+### Exercise 4: Create a new auth package for our app
 1. Create a new Python package for authentication called `auth` inside the `app` package.
 2. Create `app/auth/routes.py` and `app/auth/forms.py` 
 3. Define a blueprint for auth in in `app/auth/routes.py` e.g.
@@ -74,11 +93,11 @@ It will look something like this:
     from app.auth.routes import bp_auth
     app.register_blueprint(bp_auth)
     ```
-4. Move the existing sign up form from `app/main/forms.py` to `app/auth/forms.py`. To do this, place the cursor on the form class name, right click 
-5. Move the existing signup route from `app/main/routes.py` to `app/auth/routes.py`
+4. Move the existing sign up and login forms from `app/main/forms.py` to `app/auth/forms.py`. To do this, place the cursor on the form class name, right click 
+5. Move the existing signup, login and logout routes from `app/main/routes.py` to `app/auth/routes.py`
 5. Stop and restart Flask. Check that signup still works.
 
-### Exercise 4: Modify the User class to inherit the Flask-Login UserMixin class
+### Exercise 5: Modify the User class to inherit the Flask-Login UserMixin class
 The UserMixin class will provide default implementations for the following methods:
 - `is_authenticated` a property that is True if the user has valid credentials or False otherwise
 - `is_active` a property that is True if the user's account is active or False otherwise
@@ -92,29 +111,109 @@ Edit the User class in models.py to inherit UserMixin, you will also need to add
     class User(UserMixin, db.Model):
  ```
 
-### Exercise 5: Create a LoginForm class, login form template and a login route
-1. Create a LoginForm class in `app/auth/forms.py` e.g.
+### Exercise 6: Create a login route
+A LoginForm class has been created in `app/auth/forms.py`.
+A template for the login form has been created in `app/templates/login.html`
+1. Add the following helper functions to `app/auth/routes.py`
+    ```python
+   
+    from urllib.parse import urlparse, urljoin
+
+    from flask import request, flash, redirect, url_for
+    
+
+    from app import login_manager
+    from app.models import User
+   
+   
+   def is_safe_url(target):
+       host_url = urlparse(request.host_url)
+       redirect_url = urlparse(urljoin(request.host_url, target))
+    return redirect_url.scheme in ('http', 'https') and host_url.netloc == redirect_url.netloc 
+
+
+    def get_safe_redirect():
+       url = request.args.get('next')
+       if url and is_safe_url(url):
+           return url
+       url = request.referrer
+       if url and is_safe_url(url):
+        return url
+    return '/'     
+
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        """Check if user is logged-in on every page load."""
+        if user_id is not None:
+           return User.query.get(user_id)
+        return None
+
+
+    @login_manager.unauthorized_handler
+    def unauthorized():
+        """Redirect unauthorized users to Login page."""
+        flash('You must be logged in to view that page.')
+        return redirect(url_for('auth.login'))
+   
+   
     ```
-    class LoginForm(FlaskForm):
-        email = StringField('Email', validators=[DataRequired(), Email()])
-        password = PasswordField('Password', validators=[DataRequired()])
-        remember_me = BooleanField('Keep me logged in')
+2. Modify the login route to `app/auth/routes.py` e.g.
+    ```python
+    @bp_auth.route('/login/', methods=['GET', 'POST'])
+    def login():
+        form = LoginForm()
+        if request.method == 'POST' and form.validate():
+            user = User.query.filter_by(email=form.email.data).first()
+            if user is None or not user.check_password(form.password.data):
+                flash('Invalid username or password')
+                return redirect(url_for('auth.login'))
+            login_user(user)
+            flash('Logged in successfully. {}'.format(user.name))
+            next = request.args.get('next')
+            if not is_safe_url(next):
+                return abort(400)
+            return redirect(next or url_for('main.index'))
+        return render_template('login.html', form=form)
+   ```
+3. Modify the `logout` route
+Remove the code created for the session demo.
+Logout should only occur if a user is logged in, so use the `@login_required` decorator e.g.
+    ```python
+    @bp_auth.route('/logout/')
+    @login_required
+    def logout():
+        logout_user()
+        flash('You have been logged out.')
+        return redirect(url_for('main.index'))
     ```
-2. Create a template for the login form `app/templates/login.html`, e.g.
+4. Update the navbar in the base template to toggle between log in and logout e.g.
     ```jinja2
-    {% extends 'base.html' %}
-    {% from "_formhelpers.html" import render_field %}
-    {% block title %}Login{% endblock %}
-    {% block content %}
-    <form method="post" novalidate>
-        {{ form.hidden_tag() }}
-        <dl>
-            {{ render_field(form.email, class='form-control') }}
-            {{ render_field(form.password, class='form-control') }}
-            {{ render_field(form.remember_me) }}
-            <input type=submit value='Login' class='btn btn-primary'>
-        </dl>
-    </form>
-    {% endblock %}
+    {% if current_user.is_anonymous %}    
+   <li class="nav-item">        
+       <a class="nav-link" href="{{ url_for("auth.login") }}">Log in</a>    
+   </li>
+   {% else %}    
+   <li class="nav-item">        
+       <a class="nav-link" href="{{ url_for("auth.logout") }}">Log out</a>    
+   </li>
+   {% endif %}
+
     ```
-3. Add a login route to `app/auth/routes.py` e.g.
+    The is_anonymous property is one of the attributes that Flask-Login adds to user objects through the UserMixin class.
+    The `current_user.is_anonymous` expression will be True only when the user is not logged in.
+5. Sign up a new user. Login with that user. The navbar link should have changed to logout and your name should be displayed on the home page.
+6. Close and re-open the browser, you should no longer be logged in.
+
+### Exercise 7: Implement the readme feature
+By default, when the user closes their browser the Flask Session is deleted and the user is logged out.
+“Remember Me” prevents the user from accidentally being logged out when they close their browser.
+Flask-Login uses a cookie for this, the duration of which can be set as the REMEMBER_COOKIE_DURATION configuration parameter, or passed when the user logs in.
+1. In the login route update the login e.g. 
+    ```python
+    from datetime import timedelta
+
+    login_user(user, remember=form.remember_me.data, duration=timedelta(minutes=5))
+
+    ```
+2. Login. Close the browser. Re-open the browser, you should still be logged in.

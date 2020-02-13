@@ -1,11 +1,12 @@
-from flask import render_template, Blueprint, request, flash, redirect, url_for
+from flask import render_template, Blueprint, request, flash, redirect, url_for, session
 from flask_wtf.csrf import CSRFError
+from markupsafe import escape
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import with_polymorphic, session
+from sqlalchemy.orm import with_polymorphic
 
 from app import db
-from app.main.forms import SignupForm
+from app.main.forms import SignupForm, LoginForm
 from app.models import Course, Student, Teacher, User
 
 bp_main = Blueprint('main', __name__)
@@ -16,8 +17,29 @@ def handle_csrf_error(e):
     return render_template('csrf_error.html', reason=e.description), 400
 
 
+@bp_main.route('/login/', methods=["GET", "POST"])
+def login():
+    # Demonstration of sessions only (i.e. not an actual login function!). Set the session cookie with a value for
+    # email address.
+    form = LoginForm()
+    if request.method == "POST":
+        session['name'] = request.form['email']
+        return redirect(url_for('main.index'))
+    return render_template("login.html", form=form)
+
+
+@bp_main.route("/logout/")
+def logout():
+    # Demonstration of sessions only. Remove the email from the session if it's there.
+    session.pop('name', None)
+    return redirect(url_for('main.index'))
+
+
 @bp_main.route('/')
 def index(name=""):
+    # Demonstration of use of a session cookie. Display email as the name if the session cookie is there.
+    if 'name' in session:
+        name = escape(session['name'])
     return render_template('index.html', name=name)
 
 
@@ -28,7 +50,8 @@ def signup():
         if form.role.data == "student":
             user = Student(name=form.name.data, email=form.email.data, student_ref=form.uni_id.data)
         else:
-            user = Teacher(name=form.name.data, title=form.title.data, teacher_ref=form.uni_id.data, email=form.email.data)
+            user = Teacher(name=form.name.data, title=form.title.data, teacher_ref=form.uni_id.data,
+                           email=form.email.data)
         user.set_password(form.password.data)
         try:
             db.session.add(user)
@@ -57,7 +80,8 @@ def search():
             flash("Enter a name to search for")
             return redirect('/')
         users = with_polymorphic(User, [Student, Teacher])
-        results = db.session.query(users).filter(or_(users.Student.name.contains(term), users.Teacher.name.contains(term))).all()
+        results = db.session.query(users).filter(
+            or_(users.Student.name.contains(term), users.Teacher.name.contains(term))).all()
         # results = Student.query.filter(Student.email.contains(term)).all()
         if not results:
             flash("No students found with that name.")
