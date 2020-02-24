@@ -4,8 +4,6 @@ from os.path import dirname, abspath, join
 
 class Config(object):
     """Set Flask base configuration"""
-    # CSRF_ENABLED = True
-    # Secret key was randomly created using a Python console and enter 'import secrets' and then 'secrets.token_urlsafe(16)'
     SECRET_KEY = 'dfdQbTOExternjy5xmCNaA'
 
     # General Config
@@ -13,7 +11,6 @@ class Config(object):
     TESTING = False
 
     # Forms config
-    # Generated using the same method as the SECRET_KEY
     WTF_CSRF_SECRET_KEY = 'f7Z-JN0ftel5Sp_TywHuxA'
 
     # Database config

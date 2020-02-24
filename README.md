@@ -1,5 +1,6 @@
 # comp0034_flask_login
 COMP0034 Code to accompany the lecture covering Flask login, sessions and cookies.
+
 You will need to create a venv and install the requirements from requirements.txt.
 
 ### Exercise 1: Cookies

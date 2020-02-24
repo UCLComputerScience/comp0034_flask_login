@@ -5,7 +5,6 @@ from flask_wtf import CSRFProtect
 from config import DevConfig
 
 db = SQLAlchemy()
-csrf = CSRFProtect()
 
 
 def page_not_found(e):
@@ -24,7 +23,6 @@ def create_app(config_class=DevConfig):
     app = Flask(__name__)
     app.config.from_object(config_class)
     db.init_app(app)
-    csrf.init_app(app)
 
     from populate_db import populate_db
     from app.models import Teacher, Student, Course, Grade
