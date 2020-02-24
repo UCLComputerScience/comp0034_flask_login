@@ -1,5 +1,6 @@
 # comp0034_flask_login
-COMP0034 Code to accompany the lecture covering Flask login, sessions and cookies
+COMP0034 Code to accompany the lecture covering Flask login, sessions and cookies.
+You will need to create a venv and install the requirements from requirements.txt.
 
 ### Exercise 1: Cookies
 1. Create a cookie in the signup route as soon as a new user has been successfully created. The cookie should use the value of the name field from the form to create a cookie called name. 
